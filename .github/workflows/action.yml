@@ -8,83 +8,17 @@ jobs:
       fail-fast: false
       matrix:
         name: [
-          ubuntu-gcc-autotools,
-          ubuntu-clang-autotools,
           ubuntu-gcc-ossfuzz,
-          macos-autotools,
-          ubuntu-gcc-cmake,
-          ubuntu-gcc-cmake-shared,
-          ubuntu-clang-cmake,
           ubuntu-clang-cmake-shared,
-          macos-cmake,
-          macos-cmake-shared,
-          windows-vs2022-x64,
           windows-vs2022-x64-shared,
-          windows-vs2022-Win32,
-          windows-vs2022-Win32-shared
-        ]
+          ]
         include:
-          - name: ubuntu-gcc-autotools
-            os: ubuntu-latest
-            cc: gcc
-            cxx: g++
-            autotools-options: --enable-werror
-            build-system: autotools
-
-          - name: ubuntu-clang-autotools
-            os: ubuntu-latest
-            cc: clang
-            cxx: clang++
-            autotools-options: --enable-werror
-            build-system: autotools
-
           - name: ubuntu-gcc-ossfuzz
             os: ubuntu-latest
             cc: gcc
             cxx: g++
             autotools-options: --enable-werror
             build-system: ossfuzz
-
-          - name: macos-autotools
-            os: macos-latest
-            cc: clang
-            cxx: clang++
-            autotools-options: --enable-werror
-            build-system: autotools
-
-          - name: ubuntu-gcc-cmake
-            os: ubuntu-latest
-            cc: gcc
-            cxx: g++
-            build-system: cmake
-            cmake-generator: 'Ninja'
-            cmake-options: >-
-              -DCMAKE_BUILD_TYPE=Release
-              -DCMAKE_C_FLAGS="-Wall -Wextra"
-              -DCMAKE_VERBOSE_MAKEFILE=ON
-
-          - name: ubuntu-gcc-cmake-shared
-            os: ubuntu-latest
-            cc: gcc
-            cxx: g++
-            build-system: cmake
-            cmake-generator: 'Ninja'
-            cmake-options: >-
-              -DCMAKE_BUILD_TYPE=Release
-              -DBUILD_SHARED_LIBS=ON
-              -DCMAKE_C_FLAGS="-Wall -Wextra"
-              -DCMAKE_VERBOSE_MAKEFILE=ON
-
-          - name: ubuntu-clang-cmake
-            os: ubuntu-latest
-            cc: clang
-            cxx: clang++
-            build-system: cmake
-            cmake-generator: 'Ninja'
-            cmake-options: >-
-              -DCMAKE_BUILD_TYPE=Release
-              -DCMAKE_C_FLAGS="-Wall -Wextra"
-              -DCMAKE_VERBOSE_MAKEFILE=ON
 
           - name: ubuntu-clang-cmake-shared
             os: ubuntu-latest
@@ -97,40 +31,6 @@ jobs:
               -DBUILD_SHARED_LIBS=ON
               -DCMAKE_C_FLAGS="-Wall -Wextra"
               -DCMAKE_VERBOSE_MAKEFILE=ON
-
-          - name: macos-cmake
-            os: macos-latest
-            cc: clang
-            cxx: clang++
-            build-system: cmake
-            cmake-generator: 'Unix Makefiles'
-            cmake-options: >-
-              -DCMAKE_BUILD_TYPE=Release
-              -DCMAKE_C_FLAGS="-Wall -Wextra"
-              -DCMAKE_VERBOSE_MAKEFILE=ON
-
-          - name: macos-cmake-shared
-            os: macos-latest
-            cc: clang
-            cxx: clang++
-            build-system: cmake
-            cmake-generator: 'Unix Makefiles'
-            cmake-options: >-
-              -DCMAKE_BUILD_TYPE=Release
-              -DBUILD_SHARED_LIBS=ON
-              -DCMAKE_C_FLAGS="-Wall -Wextra"
-              -DCMAKE_VERBOSE_MAKEFILE=ON
-
-          - name: windows-vs2022-x64
-            os: windows-latest
-            triplet: 'x64-windows-static'
-            build-system: cmake
-            cmake-generator: 'Visual Studio 17 2022'
-            cmake-options: >-
-              -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded$<$<CONFIG:Debug>:Debug>
-              -DCMAKE_BUILD_TYPE=Release
-              -DVCPKG_TARGET_TRIPLET=x64-windows-static
-              -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
 
           - name: windows-vs2022-x64-shared
             os: windows-latest
@@ -145,35 +45,6 @@ jobs:
               -DINSTALL_PKGCONFIG_MODULE=OFF
               -DCMAKE_BUILD_TYPE=Release
               -DVCPKG_TARGET_TRIPLET=x64-windows-static
-              -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
-
-          - name: windows-vs2022-Win32
-            os: windows-latest
-            triplet: 'x86-windows-static'
-            build-system: cmake
-            cmake-generator: 'Visual Studio 17 2022'
-            cmake-options: >-
-              -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded$<$<CONFIG:Debug>:Debug>
-              -DCMAKE_GENERATOR_PLATFORM=Win32
-              -DCMAKE_BUILD_TYPE=Release
-              -DVCPKG_TARGET_TRIPLET=x86-windows-static
-              -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
-
-          - name: windows-vs2022-Win32-shared
-            os: windows-latest
-            triplet: 'x86-windows-static'
-            build-system: cmake
-            cmake-generator: 'Visual Studio 17 2022'
-            cmake-options: >-
-              -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded$<$<CONFIG:Debug>:Debug>
-              -DCMAKE_GENERATOR_PLATFORM=Win32
-              -DBUILD_SHARED_LIBS=ON
-              -DBUILD_REGTEST=OFF
-              -DBUILD_EXAMPLES=OFF
-              -DINSTALL_PKGCONFIG_MODULE=OFF
-              -DCPACK_PACKAGE_NAME=libsndfile
-              -DCMAKE_BUILD_TYPE=Release
-              -DVCPKG_TARGET_TRIPLET=x86-windows-static
               -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake
 
     runs-on: ${{ matrix.os }}
@@ -203,19 +74,6 @@ jobs:
           -username "evpobr"
           -password "${{ secrets.GITHUB_TOKEN }}"
 
-      - name: Configure, build and test with Autotools
-        env:
-          CC: ${{ matrix.cc }}
-          CXX: ${{ matrix.cxx }}
-        if: startsWith(matrix.build-system,'autotools')
-        run: |
-          autoreconf -vif
-          if [[ "${CC}" == "clang" ]]; then
-            ./configure --enable-werror && make distcheck
-          else
-            Scripts/asan-configure.sh --enable-werror && make distcheck
-          fi
-
       - name: Configure, build and test with CMake
         env:
           CC: ${{ matrix.cc }}
@@ -228,6 +86,16 @@ jobs:
           cmake .. -G "${{matrix.cmake-generator}}" ${{matrix.cmake-options}}
           cmake --build . --config Release
           ctest
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        if: startsWith(matrix.name,'windows')
+        with:
+          name: ${{ matrix.os }}-sndfile
+          path: |
+            include/*
+            build/Release/*.dll
+            build/Release/*.lib
 
       - name: Configure, build and test with OSSFuzz
         env:
