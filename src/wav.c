@@ -561,8 +561,10 @@ wav_read_header	(SF_PRIVATE *psf, int *blockalign, int *framesperblock)
 			case LIST_MARKER :
 					parsestage |= HAVE_other ;
 
-					if ((error = wavlike_subchunk_parse (psf, marker, chunk_size)) != 0)
-						return error ;
+					//if ((error = wavlike_subchunk_parse (psf, marker, chunk_size)) != 0)
+					//	return error ;
+					// Skip LIST marker
+					psf_binheader_readf (psf, "j", chunk_size) ;
 					break ;
 
 			case bext_MARKER :
